@@ -262,13 +262,13 @@ class ProxyHandler(tcp.BaseHandler):
                 else:
                     response = response_reply
                     self.send_response(response)
-                    if request and http.connection_close(request.httpversion, request.headers):
+                    if request and http.request_connection_close(request.httpversion, request.headers):
                         return
                     # We could keep the client connection when the server
                     # connection needs to go away.  However, we want to mimic
                     # behaviour as closely as possible to the client, so we
                     # disconnect.
-                    if http.connection_close(response.httpversion, response.headers):
+                    if http.response_connection_close(response.httpversion, response.headers):
                         return
         except (IOError, ProxyError, http.HttpError, tcp.NetLibError), e:
             if hasattr(e, "code"):
@@ -386,7 +386,7 @@ class ProxyHandler(tcp.BaseHandler):
                 host, port, httpversion = connparts
                 headers = self.read_headers(authenticate=True)
                 self.wfile.write(
-                            'HTTP/1.1 200 Connection established\r\n' +
+                            'HTTP/{}.{} 200 Connection established\r\n'.format(httpversion[0], httpversion[1]) +
                             ('Proxy-agent: %s\r\n'%self.server_version) +
                             '\r\n'
                             )
